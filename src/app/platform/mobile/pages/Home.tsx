@@ -123,12 +123,6 @@ export default function FixedBottomNavigation() {
 
 export const Home = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      navigate("/passport/login");
-    }
-  }, []);
-
   return (
     <ThemeProvider theme={defaultTheme}>
       <FixedBottomNavigation></FixedBottomNavigation>
