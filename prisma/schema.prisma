@@ -88,8 +88,8 @@ model WmsStockDetail {
   create_user_id String
   owner_user_id  String
   image_url      String
-  created_at     DateTime
-  updated_at     DateTime
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
   tenant_id      String
   type           String
   stock          WmsStock @relation(references: [id], fields: [stock_id])

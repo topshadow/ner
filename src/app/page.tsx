@@ -2,7 +2,6 @@
 import Image from 'next/image'
 import styles from './page.module.css'
 import {useState, useTransition} from 'react';
-import { LogFromServer } from '@/actions';
 
 export default function Home() {
   const [isPending,startTransiction]=useTransition();
@@ -12,7 +11,6 @@ export default function Home() {
       <div className={styles.description}>
         <div onClick={()=>startTransiction((a,b)=>{
           console.log('is server')
-          LogFromServer().then(res=>setStatus(res.ok))
         })}>server log button</div>
         <p>
           Get started by editing&nbsp;

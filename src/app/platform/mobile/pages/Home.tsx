@@ -27,44 +27,59 @@ import Stack from "@mui/material/Stack";
 import AddRecord from "./AddRecord";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { StockTypesToLabel, userFetch } from "../utils";
+import { StockTypesToLabel, WmsStockUser, checkLogin, getToken } from "../utils";
 import { Grid } from "@mui/material";
 import { RecordInfo } from "./RecordInfo";
+import { stockApi } from "../actions";
+
 const defaultTheme = createTheme();
 
 export default function FixedBottomNavigation() {
+  const navigate =useNavigate();
   const [value, setValue] = React.useState(0);
-  const [selectedRecordId, setSelectedRecordId] = React.useState(null);
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [stocks, setStockts] = useState([]);
+  const [selectedRecordId, setSelectedRecordId] = React.useState("");
+  const [stocks, setStockts] = useState([] as WmsStockUser[]);
   const reload = () => {
-    userFetch("/api/tenant/wms/stock", null, "GET").then((res) => {
+    stockApi.listUserStock(getToken()).then((res) => {
       setStockts(res);
     });
-  }
+  };
   useEffect(() => {
-    reload();
+    if(checkLogin()){
+      reload();
+    }else{
+      navigate('/passport/login')
+    }
+    
   }, []);
-
-  //   const [messages, setMessages] = React.useState(() => refreshMessages());
-  const navigate = useNavigate();
 
   return (
     <>
       <CssBaseline />
-
       <List style={{ paddingBottom: "80px" }}>
         {stocks.map((item, index) => (
-          <ListItem button key={item.id} onClick={() => setSelectedRecordId(item.id)}>
+          <ListItem
+            button
+            key={item.id}
+            onClick={() => setSelectedRecordId(item.id)}
+          >
             <ListItemAvatar>
               <Avatar
                 alt="Profile Picture"
-                src={item.ownerUser?item.ownerUser.avatar: "https://mui.com/static/images/avatar/1.jpg"}
+                src={
+                  item.ownerUser
+                    ? (item.ownerUser.avatar as string)
+                    : "https://mui.com/static/images/avatar/1.jpg"
+                }
               />
             </ListItemAvatar>
             <ListItemText
-              primary={<div>{new Date(item.created_at) .toLocaleString()} <Chip label={item.product?.name} />
-              </div> }
+              primary={
+                <div>
+                  {new Date(item.created_at).toLocaleString()}{" "}
+                  <Chip label={item.product?.name} />
+                </div>
+              }
               secondary={<RecordItem details={item.details}></RecordItem>}
             />
           </ListItem>
@@ -91,16 +106,18 @@ export default function FixedBottomNavigation() {
           />
         </BottomNavigation>
       </Paper>
-      {selectedRecordId && <RecordInfo stockId={selectedRecordId} onClose={()=>{setSelectedRecordId(null);reload()} }></RecordInfo>}
+      {selectedRecordId && (
+        <RecordInfo
+          stockId={selectedRecordId}
+          onClose={() => {
+            setSelectedRecordId("");
+            reload();
+          }}
+        ></RecordInfo>
+      )}
     </>
     // </Box>
   );
-}
-
-interface MessageExample {
-  primary: string;
-  secondary: string | any;
-  person: string;
 }
 
 
@@ -121,7 +138,7 @@ export const Home = () => {
 
 export function RecordItem(prop: { details: any[] }) {
   return (
-    <Grid container spacing={1} style={{ paddingTop: '10px' }}>
+    <Grid container spacing={1} style={{ paddingTop: "10px" }}>
       {prop.details.map((i) => (
         <Grid xs={4}>
           <Chip
@@ -130,10 +147,8 @@ export function RecordItem(prop: { details: any[] }) {
             size={"small"}
           />
         </Grid>
-
       ))}
     </Grid>
-
   );
 }
 
@@ -149,7 +164,14 @@ export function BasicSpeedDial(props: { onRefresh: () => void }) {
 
   return (
     <>
-      {visible && <AddRecord onClose={(v) => { setVisible(false); props.onRefresh() }}></AddRecord>}
+      {visible && (
+        <AddRecord
+          onClose={() => {
+            setVisible(false);
+            props.onRefresh();
+          }}
+        ></AddRecord>
+      )}
       <SpeedDial
         ariaLabel="SpeedDial basic example"
         sx={{ position: "fixed", bottom: 100, right: 30 }}
