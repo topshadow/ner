@@ -2,13 +2,18 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "prisma:dev": "npx prisma migrate dev --name init",
-    "prisma:gen": "npx prisma generate"
+    "prisma:gen": "npx prisma generate",
+    "prisma:seed": "npx prisma db seed -- --environment development",
+    "prisma:studio": "npx prisma studio"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
