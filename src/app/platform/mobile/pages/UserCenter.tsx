@@ -1,5 +1,6 @@
+"use client";
 import { useEffect, useState } from "react";
-import { userApi } from "../actions";
+import { userApi, storageApi } from "../actions";
 import {
   Button,
   Card,
@@ -23,6 +24,7 @@ export function UserCenter() {
     {} as { username: string; role: { name: string } }
   );
   const [data, setData] = useState<UserStockCountOut>({} as any);
+  const [avatar,setAvatar]=useState('');
   const navigate = useNavigate();
   useEffect(() => {
     userApi.loadUserInfo(getToken()).then((rtn) => setUserInfo(rtn));
@@ -35,6 +37,22 @@ export function UserCenter() {
 
   return (
     <div>
+      {avatar&&<img src={avatar} />}
+      {/* <Button onClick={()=>{}}>上传头像</Button> */}
+      <input
+        type="file"
+        placeholder="上传文件"
+        onChange={async (e) => {
+          const form = new FormData();
+          let file = e.target.files ? e.target.files[0] : null;
+          if (file) {
+            form.append("file", file);
+            form.append('filename',file.name);
+          const {url}=   await storageApi.upload(form);
+          setAvatar(url)
+          }
+        }}
+      ></input>
       <Card title={"个人信息"}>
         <CardHeader title={"个人信息"}></CardHeader>
         <CardContent>
