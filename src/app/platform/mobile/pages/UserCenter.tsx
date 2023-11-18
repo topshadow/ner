@@ -1,19 +1,25 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { userApi, storageApi } from "../actions";
 import {
+  Avatar,
   Button,
   Card,
   CardContent,
   CardHeader,
+  Fab,
+  IconButton,
   List,
   ListItem,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+
 import { useNavigate } from "react-router-dom";
 import { getToken } from "../utils";
 import type { JwtTokenObject } from "@/shared/jwt";
 import type { UserStockCountOut } from "../actions/user";
 import { DateCalendar } from "@mui/x-date-pickers";
+import { red } from "@mui/material/colors";
 const style = {
   width: "100%",
   maxWidth: 360,
@@ -21,13 +27,17 @@ const style = {
 };
 export function UserCenter() {
   const [userInfo, setUserInfo] = useState(
-    {} as { username: string; role: { name: string } }
+    {} as { username: string; role: { name: string },avatar:'' }
   );
+  const fileRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<UserStockCountOut>({} as any);
-  const [avatar,setAvatar]=useState('');
+
   const navigate = useNavigate();
-  useEffect(() => {
+  const reloadUserInfo=()=>{
     userApi.loadUserInfo(getToken()).then((rtn) => setUserInfo(rtn));
+  }
+  useEffect(() => {
+    reloadUserInfo();
     userApi.loadUserStockCount(getToken()).then((rtn) => setData(rtn));
   }, []);
   const loginOut = () => {
@@ -37,31 +47,50 @@ export function UserCenter() {
 
   return (
     <div>
-      {avatar&&<img src={avatar} />}
+      {userInfo && 
+         <Card sx={{ maxWidth: 345 }}>
+         <CardHeader
+           avatar={<Avatar sx={{ bgcolor: red[500] }} src={userInfo.avatar} aria-label="recipe"></Avatar>}
+           title={userInfo.username}
+           subheader={userInfo.role?.name}
+         />
+         </Card>
+      }
+      <div>
+      <Fab
+        color="secondary"
+        aria-label="edit"
+        style={{ position: "fixed", top: 30, right: 30 }}
+        onClick={()=>fileRef.current?.click()}
+      >
+        <EditIcon />
+      </Fab>
+      </div>
       {/* <Button onClick={()=>{}}>上传头像</Button> */}
       <input
         type="file"
+        ref={fileRef}
+        style={{ display: "none" }}
         placeholder="上传文件"
         onChange={async (e) => {
           const form = new FormData();
           let file = e.target.files ? e.target.files[0] : null;
           if (file) {
             form.append("file", file);
-            form.append('filename',file.name);
-          const {url}=   await storageApi.upload(form);
-          setAvatar(url)
+            form.append("filename", file.name);
+            const { url } = await userApi.updateUserAvatar(form,getToken());
+            reloadUserInfo()
           }
         }}
       ></input>
       <Card title={"个人信息"}>
-        <CardHeader title={"个人信息"}></CardHeader>
         <CardContent>
           <List style={style}>
-            <ListItem button> 用户名:{userInfo?.username}</ListItem>
+            {/* <ListItem button> 用户名:{userInfo?.username}</ListItem>
             <ListItem button>
               {" "}
               角色: <div>{userInfo.role && userInfo.role.name}</div>
-            </ListItem>
+            </ListItem> */}
             <ListItem button>
               {" "}
               当前总库存:<div>{data.totalWeight}</div>

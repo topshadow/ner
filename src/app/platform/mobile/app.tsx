@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import { UserCenter } from "./pages/UserCenter";
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import 'dayjs/locale/zh-cn';
+import { checkLogin } from "./utils";
 
 // import Box from '@mui/material/Box';
 const router = createHashRouter([
@@ -21,7 +22,8 @@ const router = createHashRouter([
 
 export default function App() {
   React.useEffect(() => {
-    location.hash = "#/passport/login";
+    checkLogin()?null:location.hash = "#/passport/login";
+    
   });
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="zh-cn">
