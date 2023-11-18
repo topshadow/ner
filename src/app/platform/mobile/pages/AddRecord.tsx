@@ -94,9 +94,7 @@ export default function FullScreenDialog(props: { onClose: () => void }) {
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
               新增进货记录
             </Typography>
-            <Button autoFocus color="inherit" onClick={handleClose}>
-              提交
-            </Button>
+        
           </Toolbar>
         </AppBar>
 
@@ -124,7 +122,7 @@ export default function FullScreenDialog(props: { onClose: () => void }) {
             }}
           >
             {products.map((p) => (
-              <MenuItem value={p.id}> {p.name}</MenuItem>
+              <MenuItem value={p.id} key={p.id}> {p.name}</MenuItem>
             ))}
           </Select>
         </FormControl>

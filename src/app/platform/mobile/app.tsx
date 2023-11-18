@@ -10,7 +10,7 @@ import { SnackbarProvider } from "notistack";
 import Home from "./pages/Home";
 import { UserCenter } from "./pages/UserCenter";
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import 'dayjs/locale/zh-cn';
+import 'dayjs/locale/zh-cn'; 
 
 // import Box from '@mui/material/Box';
 const router = createHashRouter([
