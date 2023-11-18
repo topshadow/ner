@@ -93,7 +93,7 @@ export function UserCenter() {
             </ListItem> */}
             <ListItem button>
               {" "}
-              当前总库存:<div>{data.totalWeight}</div>
+              当前总库存:<div>{data.totalWeight}kg</div>
             </ListItem>
           </List>
         </CardContent>
