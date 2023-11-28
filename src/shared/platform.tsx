@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+'use client'
+import React, { useEffect, useState } from "react";
 
 export enum Platform {
     Pc = 1,
@@ -19,7 +20,32 @@ function calcPlatform() {
 export function usePlatform() {
     const [platform, setPlatform] = useState<Platform>();
     useEffect(() => {
+        window.onresize=function(){
+            setPlatform(calcPlatform())
+        }
         setPlatform(calcPlatform());
     }, [])
     return platform;
+}
+
+export function PlatformUi(props: { mobile?: any, pc?: any, ipod?: any }) {
+    const platform = usePlatform();
+    let ui = null;
+    switch (platform) {
+        case Platform.Pc:
+            ui = props.pc;
+            break;
+        case Platform.Ipod:
+            ui = props.ipod || props.pc;
+            break;
+        case Platform.Mobile:
+            ui = props.mobile;
+            break;
+    }
+    if (ui) {
+        return <React.Suspense>{ui}</React.Suspense> ;
+    } else {
+        return <div>loading</div>
+    }
+
 }

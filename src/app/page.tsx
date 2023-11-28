@@ -2,7 +2,12 @@
 import Image from 'next/image'
 import styles from './page.module.css'
 import {useState, useTransition} from 'react';
-import { usePlatform } from '@/shared/platform';
+import { PlatformUi } from '@/shared/platform';
+import React from 'react';
+
+const Pc=React.lazy(()=>import('./pc'))
+const Mobile=React.lazy(()=>import('./mobile'))
+
 
 export default function Home() {
   const [isPending,startTransiction]=useTransition();
@@ -41,6 +46,8 @@ export default function Home() {
       </div>
 
       <div className={styles.center}>
+      <PlatformUi pc={<Pc></Pc>} mobile={<Mobile></Mobile>} ></PlatformUi>
+
         <Image
           className={styles.logo}
           src="/next.svg"

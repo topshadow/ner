@@ -2,7 +2,7 @@
 
 import { useEffect, useState,useTransition } from "react"
 import {AddUser,listUser} from '@/actions/test/index'
-import type {User} from '@prisma/client'
+import type {RbacUser} from '@prisma/client'
 export default  function l() {
     const [users,setUsers]=useState<User[]>([] );
     const [transation,startTranstation]=useTransition();
