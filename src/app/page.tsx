@@ -2,12 +2,17 @@
 import Image from 'next/image'
 import styles from './page.module.css'
 import {useState, useTransition} from 'react';
+import { usePlatform } from '@/shared/platform';
 
 export default function Home() {
   const [isPending,startTransiction]=useTransition();
+  const platform= usePlatform();
+
   const [status,setStatus]=useState(false);
   return (
     <main className={styles.main}>
+      
+
       <div className={styles.description}>
         <div onClick={()=>startTransiction((a,b)=>{
           console.log('is server')
