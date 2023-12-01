@@ -29,6 +29,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/react-router-dom": "^5.3.3",
     "antd-mobile": "^5.33.0",
+    "antd-mobile-icons": "^0.3.0",
     "dayjs": "^1.11.10",
     "jsonwebtoken": "^9.0.2",
     "next": "14.0.2",
@@ -47,6 +48,7 @@
     "@types/react-dom": "^18",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "29.6.4",
+    "ts-node": "^10.9.1",
     "typescript": "^5"
   }
 }

@@ -21,6 +21,7 @@ export function usePlatform() {
     const [platform, setPlatform] = useState<Platform>();
     useEffect(() => {
         window.onresize=function(){
+            console.log('resize ')
             setPlatform(calcPlatform())
         }
         setPlatform(calcPlatform());
@@ -30,6 +31,7 @@ export function usePlatform() {
 
 export function PlatformUi(props: { mobile?: any, pc?: any, ipod?: any }) {
     const platform = usePlatform();
+    console.log(platform)
     let ui = null;
     switch (platform) {
         case Platform.Pc:

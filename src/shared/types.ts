@@ -41,3 +41,11 @@ export type WmsStockUser = WmsStock & {
   product: WmsProduct;
   details: WmsStockDetail[];
 };
+
+export const StockTypesOptions: { label: string, value: StockTypes }[] = [
+  { label: StockTypesToLabel(StockTypes.OriginWeight), value: StockTypes.OriginWeight },
+  { label: StockTypesToLabel(StockTypes.OutCarWeight), value: StockTypes.OutCarWeight },
+  { label: StockTypesToLabel(StockTypes.OutContainerWeight), value: StockTypes.OutContainerWeight },
+  { label: StockTypesToLabel(StockTypes.OutFixedWeight), value: StockTypes.OutFixedWeight },
+  { label: StockTypesToLabel(StockTypes.LastWeight), value: StockTypes.LastWeight },
+]

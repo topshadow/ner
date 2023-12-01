@@ -25,6 +25,7 @@ export async function createUserStock(
   input: CreateUserStockInputArg,
   token: string,
 ) {
+  console.log('create sotcok in server')
   const { forAuth } = await decodeJwt(token);
   const { num, note, product_id, type } = input;
   if (!type || !num || !product_id || !note) {
@@ -60,7 +61,7 @@ export async function stockDetail(stockId: string, token: string) {
   console.log(stockId)
   const data = await db.wmsStock.findFirst({
     where: { id: stockId },
-    include: { details: true, ownerUser: true, createUser: true },
+    include: { details: true, ownerUser: true, createUser: true,product:true },
   });
   return data;
 }
