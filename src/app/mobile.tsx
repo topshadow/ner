@@ -14,15 +14,22 @@ import {
     MessageFill,
     UnorderedListOutline,
     UserOutline,
-    AddCircleOutline
+    AddCircleOutline,
+    TeamFill,
+    TeamOutline
 } from 'antd-mobile-icons'
 import { WmsStockUser, getToken } from "./platform/mobile/utils"
 import { stockApi, productApi } from "./platform/mobile/actions"
 import { StockTypesOptions, StockTypesToLabel } from "@/shared/types"
 import { WmsProduct, WmsStock, WmsStockDetail } from "@prisma/client"
 import { messageHandle } from "@/shared/handle"
+import { ProductPage } from "./mobilePage"
+import { MobileUserPage } from "./mobileUserPage"
+import { MobileUserCenterPage } from "./center"
+import { MobileCenterPage } from "./mobileCenterPage"
 
 export default () => {
+    const [activeKey, setActiveKey] = useState('home')
     const [visible, setVsible] = useState(false);
     const router = useRouter();
     useEffect(() => {
@@ -38,26 +45,42 @@ export default () => {
             badge: Badge.dot,
         },
         {
-            key: 'todo',
-            title: '待办',
+            key: 'product',
+            title: '产品列表',
             icon: <UnorderedListOutline />,
             badge: '5',
         },
         {
-            key: 'message',
-            title: '消息',
+            key: 'user',
+            title: '用户',
             icon: (active: boolean) =>
-                active ? <MessageFill /> : <MessageOutline />,
+                active ? <TeamFill /> : <TeamOutline />,
             badge: '99+',
         },
         {
-            key: 'personalCenter',
+            key: 'center',
             title: '我的',
             icon: <UserOutline />,
         },
     ]
+    let component = null;
+    switch (activeKey) {
+        case 'home':
+            component = <HomePage></HomePage>
+            break;
+        case 'product':
+            component = <ProductPage></ProductPage>
+            break;
+        case 'user':
+            component= <MobileUserPage></MobileUserPage>
+            break;
+        case 'center':
+            component=<MobileCenterPage></MobileCenterPage>
+            break;
 
-    const [activeKey, setActiveKey] = useState('todo');
+    }
+
+
     const onClick = () => {
         console.log('on click')
         setVsible(true)
@@ -65,10 +88,10 @@ export default () => {
 
     return (
         <>
-            {!visible && <HomePage></HomePage>}
+            {!visible && component}
             {visible && <AddStockPage visible={visible} setVisible={() => { setVsible(false); }}   ></AddStockPage>}
             <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%' }}>
-                <FloatingBubble
+                {activeKey == 'home' && <FloatingBubble
                     style={{
                         '--initial-position-bottom': '64px',
                         '--initial-position-right': '24px',
@@ -78,8 +101,8 @@ export default () => {
                 >
                     <AddCircleOutline
                         fontSize={32} />
-                </FloatingBubble>
-                <TabBar >
+                </FloatingBubble>}
+                <TabBar activeKey={activeKey} onChange={setActiveKey} >
                     {tabs.map(item => (
                         <TabBar.Item key={item.key} icon={item.icon} title={item.title} />
                     ))}
@@ -223,7 +246,7 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
     const [visible, setVisible] = useState(!!props.stockId);
     const [stock, setStock] = useState<WmsStockUser>();
     const [addStockDetailVisible, setAddStockDetailVisible] = useState(false);
-    const reload=()=>{
+    const reload = () => {
         stockApi.stockDetail(props.stockId, getToken()).then(res => {
             setStock(res)
 
@@ -275,16 +298,16 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
                 fontSize={32} />
         </FloatingBubble>
 
-        {addStockDetailVisible && <AddStockDetail close={()=>reload()} stockId={stock?.id}></AddStockDetail>}
+        {addStockDetailVisible && <AddStockDetail close={() => { setAddStockDetailVisible(false); reload() }} stockId={stock?.id}></AddStockDetail>}
     </Popup>
 }
 
 /**新增入库详情 */
-function AddStockDetail(props: { stockId: string, close: () => void }) {
+function AddStockDetail(props: { stockId?: string, close: () => void }) {
     const submit = (e) => {
         console.log(e)
-        stockApi.addStockDetail({ stock_id: props.stockId, ...e,type:e.type[0], }, getToken()).then(res=>{
-            res.ok?props.close():null;
+        stockApi.addStockDetail({ stock_id: props.stockId, ...e, type: e.type[0], }, getToken()).then(res => {
+            res.ok ? props.close() : null;
         });
     };
 
@@ -297,7 +320,7 @@ function AddStockDetail(props: { stockId: string, close: () => void }) {
                     <Button block type='submit' color='primary' size='large'>
                         提交
                     </Button>
-                    <Button block style={{ marginTop: '30px' }} color='success' onClick={close} size='large'>
+                    <Button block style={{ marginTop: '30px' }} color='success' onClick={props.close} size='large'>
                         返回
                     </Button>
                 </>
@@ -315,7 +338,7 @@ function AddStockDetail(props: { stockId: string, close: () => void }) {
 
                 />
             </Form.Item>
-            
+
             <Form.Item name='type' label='方式' childElementPosition='normal'>
                 <Selector options={StockTypesOptions}></Selector>
 
@@ -331,3 +354,5 @@ function AddStockDetail(props: { stockId: string, close: () => void }) {
         </Form>
     </Popup>
 }
+
+

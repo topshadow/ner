@@ -15,8 +15,11 @@ export async function login(
       tenant_id: user.tenant_id,
       role_id: user.role_id,
       username,
-      forAuth:{create_user_id:user.id,tenant_id:user.tenant_id}
+      forAuth:{create_user_id:user.id,tenant_id:user.tenant_id},
+      is_admin:!!user.is_admin
     });
+    debugger;
+    console.log('is admin login:',!!user.is_admin)
     return { ok: true, token: token, msg: "登陆成功" };
   } else {
     return { ok: false, token: "false", msg: "用户名或密码错误" };

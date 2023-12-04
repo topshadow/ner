@@ -36,6 +36,7 @@ model RbacUser {
   role         RbacRole   @relation(references: [id], fields: [role_id])
   ownerStocks  WmsStock[] @relation("ownerStocks")
   createStocks WmsStock[] @relation("createStocks")
+  is_admin     Boolean?
 
   @@index([tenant_id])
   @@index([role_id])
@@ -51,9 +52,11 @@ model RbacRole {
 }
 
 model WmsProduct {
-  id         String     @id @default(uuid())
-  name       String
-  note       String
+  id             String  @id @default(uuid())
+  name           String
+  note           String
+  create_user_id String?
+
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
   tenant_id  String

@@ -8,6 +8,7 @@ export type JwtTokenObject = {
     create_user_id: any;
     tenant_id: any;
   };
+  is_admin: boolean
 };
 
 export function encodeJwt(tokenObject: JwtTokenObject) {
