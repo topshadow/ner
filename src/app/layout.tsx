@@ -29,7 +29,7 @@ export default function RootLayout({
 
       </Head>
 
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className} style={{padding:0,margin:0}}>{children}</body>
     </html>
   )
 }

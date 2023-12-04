@@ -30,7 +30,7 @@ export function MobileUserPage() {
     }, [])
 
     return <><NavBar back={null}>
-        产品列表
+        用户列表
     </NavBar>
         {isAdmin && <CheckList value={checkIds} onChange={setCheckIds}>
             {users.map(u => <CheckList.Item key={u.id} value={u.id}>
@@ -123,7 +123,10 @@ export function UserDetailPage(props: { userId: string, close: Function }) {
             <List.Item title={'姓名'}>{user?.nickname}</List.Item>
             <List.Item title={'账号'}>{user?.username}</List.Item>
             <List.Item title={'密码'}>{user?.password}</List.Item>
+            <List.Item title={'是否管理员'}>
+            <Switch defaultChecked={user?.is_admin||false}  disabled />
 
+            </List.Item>
         </List>
     </Popup>
 }
@@ -183,7 +186,8 @@ export async function UserModifyPage(props: { userId: string, close: Function })
                 label='是否管理员'
                 childElementPosition='normal'
             >
-                <Switch defaultChecked={false} />
+              a:  {user.is_admin}
+                <Switch defaultChecked={user.is_admin} />
 
                 <Button style={{ position: 'fixed', left: 0, bottom: '40px', width: '100%' }} type='submit' block color={'primary'} type={'submit'}>提交</Button>
             </Form.Item>

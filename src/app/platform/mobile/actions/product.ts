@@ -11,6 +11,7 @@ export async function addProduct(input: AddProductInput, token: string) {
   await db.wmsProduct.create({
     data: {
       ...input,
+      
       ...forAuth,
     },
   });

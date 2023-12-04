@@ -35,6 +35,8 @@ export async function createUserStock(
     data: {
       owner_user_id: forAuth?.create_user_id,
       ...forAuth,
+      origin_num:input.num,
+
       product_id,
       note,
       num,
@@ -47,6 +49,7 @@ export async function createUserStock(
       type,
       stock_id: stock.id,
       owner_user_id: forAuth?.create_user_id,
+
       ...forAuth,
       unit: "",
       image_url: "",
@@ -70,6 +73,9 @@ export async function addStockDetail(
   input: { num: number; note: string; stock_id: string; type: string },
   token: string,
 ) {
+  if(!input.note){
+    return {ok:false,msg:'请填写备注'}
+  }
   const { forAuth } = decodeJwt(token);
   await db.wmsStockDetail.create({
     data: {

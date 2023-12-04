@@ -150,9 +150,14 @@ function HomePage() {
                 onClick={() => { setSelectedRecordId(stock.id); return {} }}
             >
                 {new Date(stock.created_at).toLocaleString()}
+                <Tag round color='success'>
+                    {stock.product.name}
+                </Tag>
+                
                 <Tag round color='#2db7f5'>
                     {stock.num}kg
                 </Tag>
+
             </List.Item>
         ))}
     </List>
@@ -249,7 +254,6 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
     const reload = () => {
         stockApi.stockDetail(props.stockId, getToken()).then(res => {
             setStock(res)
-
         });
     }
     useEffect(() => {
@@ -306,7 +310,7 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
 function AddStockDetail(props: { stockId?: string, close: () => void }) {
     const submit = (e) => {
         console.log(e)
-        stockApi.addStockDetail({ stock_id: props.stockId, ...e, type: e.type[0], }, getToken()).then(res => {
+        stockApi.addStockDetail({ stock_id: props.stockId, ...e, type: e.type[0], }, getToken()).then(res=>messageHandle(res)).then(res => {
             res.ok ? props.close() : null;
         });
     };

@@ -1,7 +1,7 @@
 'use client'
 import { Button, CheckList, Form, Input, NavBar, Popup, TextArea, Toast } from "antd-mobile";
 import { useEffect, useState } from "react";
-import { productApi } from "./platform/mobile/actions";
+import { productApi, userApi } from "./platform/mobile/actions";
 import { getToken } from "@/shared/auth";
 import { WmsProduct } from "@prisma/client";
 import { Checklist } from "@mui/icons-material";
@@ -12,12 +12,16 @@ export function ProductPage() {
     const [enableIds, setEnableIds] = useState<string[]>([]);
     const [addProductVisible, setAddProductVisible] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState('');
-
+    const [isAdmin,setIsAdmin]=useState(false);
     const reload = () => {
         productApi.listProduct(getToken()).then(res => setProducts(res));
     }
+    const reloadAdmin=()=>{
+        userApi.isAdmin(getToken()).then(res=>setIsAdmin(res));
+    }
     useEffect(() => {
         reload();
+        reloadAdmin();
     }, []);
 
 
@@ -28,10 +32,11 @@ export function ProductPage() {
         <CheckList defaultValue={enableIds} onChange={setEnableIds} style={{ paddingBottom: '80px' }}>
             {products.map(p => <CheckList.Item key={p.id} value={p.id}  title={p.name} description={p.note}> </CheckList.Item>)}
             <div style={{ position: 'fixed', bottom: '60px', width: '100%' }}>
-                {enableIds.length > 0 && <Button block color='warning' style={{ marginBottom: '20px' }} onClick={() => setSelectedProductId(enableIds[0])} >修改</Button>}
-                <Button block color="primary" onClick={() => setAddProductVisible(true)}>新增</Button>
-                {addProductVisible && <AddProductPage onClose={() => { setAddProductVisible(false); reload() }}></AddProductPage>}
-                {selectedProductId && <ModifyProductPage onClose={()=>{setSelectedProductId('');reload()}} productId={selectedProductId}></ModifyProductPage>}
+
+                {isAdmin&& enableIds.length > 0 && <Button block color='warning' style={{ marginBottom: '20px' }} onClick={() => setSelectedProductId(enableIds[0])} >修改</Button>}
+                {isAdmin&& <Button block color="primary" onClick={() => setAddProductVisible(true)}>新增</Button>}
+                {isAdmin&& addProductVisible && <AddProductPage onClose={() => { setAddProductVisible(false); reload() }}></AddProductPage>}
+                {isAdmin&& selectedProductId && <ModifyProductPage onClose={()=>{setSelectedProductId('');reload()}} productId={selectedProductId}></ModifyProductPage>}
             </div>
         </CheckList></div>
 }
