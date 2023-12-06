@@ -16,10 +16,12 @@ import {
     UserOutline,
     AddCircleOutline,
     TeamFill,
-    TeamOutline
+    TeamOutline,
+    CheckCircleOutline,
+    CloseCircleOutline
 } from 'antd-mobile-icons'
 import { WmsStockUser, getToken } from "./platform/mobile/utils"
-import { stockApi, productApi } from "./platform/mobile/actions"
+import { stockApi, productApi, userApi } from "./platform/mobile/actions"
 import { StockTypesOptions, StockTypesToLabel } from "@/shared/types"
 import { WmsProduct, WmsStock, WmsStockDetail } from "@prisma/client"
 import { messageHandle } from "@/shared/handle"
@@ -72,10 +74,10 @@ export default () => {
             component = <ProductPage></ProductPage>
             break;
         case 'user':
-            component= <MobileUserPage></MobileUserPage>
+            component = <MobileUserPage></MobileUserPage>
             break;
         case 'center':
-            component=<MobileCenterPage></MobileCenterPage>
+            component = <MobileCenterPage></MobileCenterPage>
             break;
 
     }
@@ -88,9 +90,11 @@ export default () => {
 
     return (
         <>
+        <div style={{paddingBottom:'50px'}}>
             {!visible && component}
+            </div>
             {visible && <AddStockPage visible={visible} setVisible={() => { setVsible(false); }}   ></AddStockPage>}
-            <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%' }}>
+            <div style={{ position: 'fixed', bottom: 0,zIndex:1000, left: 0, width: '100%' ,marginTop:'60px'}}>
                 {activeKey == 'home' && <FloatingBubble
                     style={{
                         '--initial-position-bottom': '64px',
@@ -127,20 +131,22 @@ function HomePage() {
         } else {
         }
     }, []);
-    return <List header='库存列表'>
+    return <List header='库存列表' style={{paddingBottom:'100px'}} >
         {selectedRecordId && <StockDetail stockId={selectedRecordId} cancel={() => setSelectedRecordId(null)}></StockDetail>}
         {stocks.map(stock => (
             <List.Item
 
                 key={stock.id}
                 prefix={
-                    <Image
+                    <><Image
                         src={stock.ownerUser?.avatar || ''}
                         style={{ borderRadius: 20 }}
                         fit='cover'
                         width={40}
                         height={40}
                     />
+                    {stock.ownerUser.nickname}
+                    </>
                 }
                 description={<div >
                     <Space>
@@ -153,7 +159,7 @@ function HomePage() {
                 <Tag round color='success'>
                     {stock.product.name}
                 </Tag>
-                
+
                 <Tag round color='#2db7f5'>
                     {stock.num}kg
                 </Tag>
@@ -251,15 +257,21 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
     const [visible, setVisible] = useState(!!props.stockId);
     const [stock, setStock] = useState<WmsStockUser>();
     const [addStockDetailVisible, setAddStockDetailVisible] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const reload = () => {
         stockApi.stockDetail(props.stockId, getToken()).then(res => {
             setStock(res)
         });
+        userApi.isAdmin(getToken()).then(res => setIsAdmin(res));
     }
     useEffect(() => {
         reload();
 
-    }, [])
+    }, []);
+    const toggleLock = async (is_lock: boolean) => {
+        await stockApi.toggleStockLock(props.stockId, is_lock).then(messageHandle);
+        await reload();
+    }
 
     return <Popup
         visible={visible}
@@ -269,7 +281,7 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
         bodyStyle={{ height: '100vh' }}
     >
         <NavBar back='返回' onBack={props.cancel}>
-            库存详情
+            库存详情  {stock?.is_lock==true ? <div style={{ color: 'red' }}><CloseCircleOutline />已封账</div> : <div style={{color:'lightgreen'}} ><CheckCircleOutline />有效激活</div>}
         </NavBar>
         {stock && <h1 style={{ textAlign: 'center', color: 'gray' }}>{stock.product.name}</h1>}
         {stock && <Card title={<>            <Tag color='primary'>    {stock.product.name}</Tag>
@@ -290,9 +302,9 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
             </>
         })}
 
-        <FloatingBubble
+        {stock?.is_lock != true && <FloatingBubble
             style={{
-                '--initial-position-bottom': '64px',
+                '--initial-position-bottom': '84px',
                 '--initial-position-right': '24px',
                 '--edge-distance': '24px',
             }}
@@ -300,8 +312,12 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
         >
             <AddCircleOutline
                 fontSize={32} />
-        </FloatingBubble>
+        </FloatingBubble>}
 
+        <div style={{ position: 'fixed', left: 0, bottom: '40px', width: '100%' }}>
+            {stock?.is_lock != true && isAdmin && <Button block color="primary" onClick={() => { toggleLock(true) }}>封账</Button>}
+            {stock?.is_lock && isAdmin && <Button block color="primary" onClick={() => toggleLock(false)}>解封</Button>}
+        </div>
         {addStockDetailVisible && <AddStockDetail close={() => { setAddStockDetailVisible(false); reload() }} stockId={stock?.id}></AddStockDetail>}
     </Popup>
 }
@@ -310,7 +326,7 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
 function AddStockDetail(props: { stockId?: string, close: () => void }) {
     const submit = (e) => {
         console.log(e)
-        stockApi.addStockDetail({ stock_id: props.stockId, ...e, type: e.type[0], }, getToken()).then(res=>messageHandle(res)).then(res => {
+        stockApi.addStockDetail({ stock_id: props.stockId, ...e, type: e.type[0], }, getToken()).then(res => messageHandle(res)).then(res => {
             res.ok ? props.close() : null;
         });
     };

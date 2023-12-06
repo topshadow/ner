@@ -5,9 +5,11 @@ import { Prisma } from "@prisma/client";
 
 /**列出用户stocks */
 export async function listUserStock(token: string) {
-  const { user_id } = await decodeJwt(token);
+  const { user_id, is_admin } = await decodeJwt(token);
+  // 管理员可以查看所有人
+  const where = is_admin ? {} : { owner_user_id: user_id };
   return await db.wmsStock.findMany({
-    where: { owner_user_id: user_id },
+    where,
     include: {
       product: true,
       details: true,
@@ -35,7 +37,7 @@ export async function createUserStock(
     data: {
       owner_user_id: forAuth?.create_user_id,
       ...forAuth,
-      origin_num:input.num,
+      origin_num: input.num,
 
       product_id,
       note,
@@ -64,7 +66,7 @@ export async function stockDetail(stockId: string, token: string) {
   console.log(stockId)
   const data = await db.wmsStock.findFirst({
     where: { id: stockId },
-    include: { details: true, ownerUser: true, createUser: true,product:true },
+    include: { details: true, ownerUser: true, createUser: true, product: true },
   });
   return data;
 }
@@ -73,8 +75,8 @@ export async function addStockDetail(
   input: { num: number; note: string; stock_id: string; type: string },
   token: string,
 ) {
-  if(!input.note){
-    return {ok:false,msg:'请填写备注'}
+  if (!input.note) {
+    return { ok: false, msg: '请填写备注' }
   }
   const { forAuth } = decodeJwt(token);
   await db.wmsStockDetail.create({
@@ -94,4 +96,9 @@ export async function addStockDetail(
   });
 
   return { ok: true };
+}
+
+export async function toggleStockLock(stockId: string, is_lock: boolean) {
+  await db.wmsStock.update({ where: { id: stockId }, data: { is_lock } });
+  return { ok: true, msg: is_lock ? '封账成功' : '解封成功' }
 }

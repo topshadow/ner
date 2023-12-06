@@ -1,9 +1,9 @@
 datasource db {
-  // provider     = "postgresql"
+  provider = "postgresql"
 
-  // url          = env("DATABASE_URL")
-  provider = "sqlite"
-  url      = "file:./a.db"
+  url = env("DATABASE_URL")
+  // provider = "sqlite"
+  // url      = "file:./a.db"
 
   relationMode = "prisma"
 }
@@ -78,6 +78,7 @@ model WmsStock {
   ownerUser      RbacUser         @relation(name: "ownerStocks", references: [id], fields: [owner_user_id])
   createUser     RbacUser         @relation(name: "createStocks", references: [id], fields: [create_user_id])
   details        WmsStockDetail[]
+  is_lock        Boolean?
 
   @@index([owner_user_id])
   @@index([create_user_id])
