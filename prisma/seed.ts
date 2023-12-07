@@ -35,6 +35,7 @@ async function seedUsers() {
       nickname: "jack young",
       tenant_id: tenant.id,
       role_id: role.id,
+      is_admin:true
     },
   });
 }

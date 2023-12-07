@@ -11,6 +11,8 @@ export async function loadUserInfo(token: string) {
     include: { role: true },
   });
 }
+
+
 export async function loadUserInfoById(userId: string) {
   return await db.rbacUser.findFirst({
     where: { id:userId },
@@ -30,6 +32,24 @@ export async function loadUserStockCount(token: string) {
 
   const totalWeight = await db.wmsStock.aggregate({
     where: { owner_user_id: forAuth.create_user_id },
+    _sum: {
+      num: true,
+    },
+    _count: { id: true },
+  });
+
+  console.log("total weight:", totalWeight);
+
+  return {
+    totalWeight: totalWeight._sum.num,
+    totalCount: totalWeight._count.id,
+  };
+}
+export async function loadCompanyStockCount(token:string){
+  const { forAuth } = decodeJwt(token);
+
+  const totalWeight = await db.wmsStock.aggregate({
+    where: { tenant_id:forAuth.tenant_id},
     _sum: {
       num: true,
     },

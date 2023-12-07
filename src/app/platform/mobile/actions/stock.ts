@@ -4,10 +4,20 @@ import { db } from "@/shared";
 import { Prisma } from "@prisma/client";
 
 /**列出用户stocks */
-export async function listUserStock(token: string) {
+export async function listUserStock(lock: 'all' | 'true' | 'false', token: string) {
   const { user_id, is_admin } = await decodeJwt(token);
   // 管理员可以查看所有人
-  const where = is_admin ? {} : { owner_user_id: user_id };
+  let where: any = is_admin ? {} : { owner_user_id: user_id };
+  switch (lock) {
+    case 'all':
+      break;
+    case 'true':
+      where.is_lock = true;
+      break;
+    case 'false':
+      where.is_lock =false;
+      break;
+  }
   return await db.wmsStock.findMany({
     where,
     include: {
@@ -16,6 +26,7 @@ export async function listUserStock(token: string) {
       ownerUser: true,
       createUser: true,
     },
+    orderBy:{created_at:'desc'}
   });
 }
 type CreateUserStockInputArg =
@@ -42,6 +53,7 @@ export async function createUserStock(
       product_id,
       note,
       num,
+      is_lock:false
     },
   });
   await db.wmsStockDetail.create({
@@ -53,6 +65,7 @@ export async function createUserStock(
       owner_user_id: forAuth?.create_user_id,
 
       ...forAuth,
+      
       unit: "",
       image_url: "",
     },

@@ -7,7 +7,7 @@ import { useEffect } from "react"
 
 
 import React, { useState } from 'react'
-import { Badge, List, TabBar, Image, FloatingBubble, Button, Popup, Space, Form, Switch, Stepper, Input, TextArea, Selector, Tag, NavBar, Card, Divider } from 'antd-mobile'
+import { Badge, List, TabBar, Image, FloatingBubble, Button, Popup, Space, Form, Switch, Stepper, Input, TextArea, Selector, Tag, NavBar, Card, Divider, Tabs } from 'antd-mobile'
 import {
     AppOutline,
     MessageOutline,
@@ -27,8 +27,9 @@ import { WmsProduct, WmsStock, WmsStockDetail } from "@prisma/client"
 import { messageHandle } from "@/shared/handle"
 import { ProductPage } from "./mobilePage"
 import { MobileUserPage } from "./mobileUserPage"
-import { MobileUserCenterPage } from "./center"
 import { MobileCenterPage } from "./mobileCenterPage"
+import res from "antd-mobile-icons/es/AaOutline"
+import { isAdmin } from "./platform/mobile/actions/user"
 
 export default () => {
     const [activeKey, setActiveKey] = useState('home')
@@ -90,11 +91,11 @@ export default () => {
 
     return (
         <>
-        <div style={{paddingBottom:'50px'}}>
-            {!visible && component}
+            <div style={{ paddingBottom: '50px' }}>
+                {!visible && component}
             </div>
             {visible && <AddStockPage visible={visible} setVisible={() => { setVsible(false); }}   ></AddStockPage>}
-            <div style={{ position: 'fixed', bottom: 0,zIndex:1000, left: 0, width: '100%' ,marginTop:'60px'}}>
+            <div style={{ position: 'fixed', bottom: 0, zIndex: 1000, left: 0, width: '100%', marginTop: '60px' }}>
                 {activeKey == 'home' && <FloatingBubble
                     style={{
                         '--initial-position-bottom': '64px',
@@ -120,8 +121,9 @@ export default () => {
 function HomePage() {
     const [selectedRecordId, setSelectedRecordId] = React.useState("");
     const [stocks, setStockts] = useState([] as WmsStockUser[]);
+    const [activeKey,setActiveKey]=useState<'all'|'true'|'false'>('all')
     const reload = () => {
-        stockApi.listUserStock(getToken()).then((res) => {
+        stockApi.listUserStock(activeKey, getToken()).then((res) => {
             setStockts(res);
         });
     };
@@ -131,26 +133,33 @@ function HomePage() {
         } else {
         }
     }, []);
-    return <List header='库存列表' style={{paddingBottom:'100px'}} >
-        {selectedRecordId && <StockDetail stockId={selectedRecordId} cancel={() => setSelectedRecordId(null)}></StockDetail>}
+    useEffect(()=>{
+        reload()
+    },[activeKey])
+
+    const list = <List header='库存列表' style={{ paddingBottom: '100px' }} >
+        {selectedRecordId && <StockDetail stockId={selectedRecordId} cancel={() => setSelectedRecordId('')}></StockDetail>}
         {stocks.map(stock => (
+            <>
+            <Divider></Divider>
+            <div style={{textAlign:'center',padding:'10px'}}><Tag color={stock.is_lock?'default':'success'}>{stock.is_lock?'已封账':'激活'}</Tag></div>
             <List.Item
 
                 key={stock.id}
                 prefix={
                     <><Image
-                        src={stock.ownerUser?.avatar || ''}
+                        src={stock.ownerUser?.avatar || 'https://images.unsplash.com/photo-1542624937-8d1e9f53c1b9?ixlib=rb-1.2.1&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&ixid=eyJhcHBfaWQiOjE3Nzg0fQ'}
                         style={{ borderRadius: 20 }}
                         fit='cover'
                         width={40}
                         height={40}
                     />
-                    {stock.ownerUser.nickname}
+                       <span style={{fontSize:'.8rem'}}> {stock.ownerUser.nickname}</span>
                     </>
                 }
                 description={<div >
                     <Space>
-                        {stock.details.map(s => { return <Tag key={s.id} round>{StockTypesToLabel(s.type) + ' ' + s.num + ' kg'}</Tag> })}
+                        {stock.details.map(s => { return <Tag key={s.id} round>{StockTypesToLabel(s.type as any) + ' ' + s.num + ' kg'}</Tag> })}
                     </Space>
                 </div>}
                 onClick={() => { setSelectedRecordId(stock.id); return {} }}
@@ -165,8 +174,23 @@ function HomePage() {
                 </Tag>
 
             </List.Item>
+            </>
         ))}
-    </List>
+    </List>;
+    return <>
+        <Tabs activeKey={activeKey} onChange={setActiveKey}>
+            <Tabs.Tab title='全部' key='all'>
+                {list}
+            </Tabs.Tab>
+            <Tabs.Tab title='激活' key='false'>
+                {list}
+            </Tabs.Tab>
+            <Tabs.Tab title='已封账' key='true'>
+                {list}
+            </Tabs.Tab>
+        </Tabs>
+
+    </>
 }
 
 
@@ -181,7 +205,7 @@ function AddStockPage(props: { visible: boolean, setVisible: () => void }) {
         })
     }, []);
 
-    const submit = (e) => stockApi.createUserStock({ ...e, product_id: e.product_id[0], type: e.type[0] }, getToken()).then(res => messageHandle(res)).then(res => res.ok ? props.setVisible() : null);
+    const submit = (e: any) => stockApi.createUserStock({ ...e, product_id: e.product_id[0], type: e.type[0] }, getToken()).then(res => messageHandle(res)).then(res => res.ok ? props.setVisible() : null);
     return (
         <>
             <Popup
@@ -260,7 +284,7 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
     const [isAdmin, setIsAdmin] = useState(false);
     const reload = () => {
         stockApi.stockDetail(props.stockId, getToken()).then(res => {
-            setStock(res)
+            setStock(res as any)
         });
         userApi.isAdmin(getToken()).then(res => setIsAdmin(res));
     }
@@ -281,7 +305,7 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
         bodyStyle={{ height: '100vh' }}
     >
         <NavBar back='返回' onBack={props.cancel}>
-            库存详情  {stock?.is_lock==true ? <div style={{ color: 'red' }}><CloseCircleOutline />已封账</div> : <div style={{color:'lightgreen'}} ><CheckCircleOutline />有效激活</div>}
+            库存详情  {stock?.is_lock == true ? <div style={{ color: 'red' }}><CloseCircleOutline />已封账</div> : <div style={{ color: 'lightgreen' }} ><CheckCircleOutline />有效激活</div>}
         </NavBar>
         {stock && <h1 style={{ textAlign: 'center', color: 'gray' }}>{stock.product.name}</h1>}
         {stock && <Card title={<>            <Tag color='primary'>    {stock.product.name}</Tag>
@@ -292,8 +316,8 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
         <Divider />
 
         {stock?.details.map(d => {
-            return <><Card key={d.id} title={<><Tag color="success">{StockTypesToLabel(d.type)}</Tag> {new Date(d.created_at).toLocaleDateString()} </>} >
-                <span style={{ color: 'gray' }}> 类型</span>:{StockTypesToLabel(d.type)}
+            return <><Card key={d.id} title={<><Tag color="success">{StockTypesToLabel(d.type as any)}</Tag> {new Date(d.created_at).toLocaleDateString()} </>} >
+                <span style={{ color: 'gray' }}> 类型</span>:{StockTypesToLabel(d.type as any)}
                 <br />
                 <span style={{ color: 'gray' }}> 重量</span>: {d.num}kg
 
@@ -324,7 +348,7 @@ function StockDetail(props: { stockId: string, cancel: () => void }) {
 
 /**新增入库详情 */
 function AddStockDetail(props: { stockId?: string, close: () => void }) {
-    const submit = (e) => {
+    const submit = (e: any) => {
         console.log(e)
         stockApi.addStockDetail({ stock_id: props.stockId, ...e, type: e.type[0], }, getToken()).then(res => messageHandle(res)).then(res => {
             res.ok ? props.close() : null;

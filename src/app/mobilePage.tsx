@@ -29,7 +29,7 @@ export function ProductPage() {
         <NavBar back={null}>
             产品列表
         </NavBar>
-        <CheckList defaultValue={enableIds} onChange={setEnableIds} style={{ paddingBottom: '80px' }}>
+        <CheckList defaultValue={enableIds} onChange={(e:any)=>setEnableIds(e)} style={{ paddingBottom: '80px' }}>
             {products.map(p => <CheckList.Item key={p.id} value={p.id}  title={p.name} description={p.note}> </CheckList.Item>)}
             <div style={{ position: 'fixed', bottom: '60px', width: '100%' }}>
 
@@ -79,7 +79,7 @@ export function AddProductPage(props: { onClose: Function }) {
 }
 
 export function ModifyProductPage(props: { onClose: Function, productId: string }) {
-    const [productDetail, setProductDetail] = useState<WmsProduct>(null);
+    const [productDetail, setProductDetail] = useState<  WmsProduct>(null as any);
     const loadDetail = () => {
         productApi.detail(props.productId, getToken()).then(res => setProductDetail(res));
     }
